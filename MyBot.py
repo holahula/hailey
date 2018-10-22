@@ -1,16 +1,12 @@
-#!/usr/bin/env python3
-# Python 3.6
 
+import sys
 # Import the Halite SDK, which will let you interact with the game.
 import hlt
-
 # This library contains constant values.
 from hlt import constants
 
-# This library contains direction metadata to better interface with the game.
 from hlt.positionals import Direction
 
-# This library allows you to generate random numbers.
 import random
 
 # Logging allows you to save messages for yourself. This is required because the regular STDOUT
@@ -31,26 +27,40 @@ game.ready("MyPythonBot")
 logging.info("Successfully created bot! My Player ID is {}.".format(game.my_id))
 
 """ <<<Game Loop>>> """
+ship_status = {}
 
 while True:
-    # This loop handles each turn of the game. The game object changes every turn, and you refresh that state by
-    #   running update_frame().
     game.update_frame()
-    # You extract player metadata and the updated map metadata here for convenience.
     me = game.me
     game_map = game.game_map
 
-    # A command queue holds all the commands you will run this turn. You build this list up and submit it at the
-    #   end of the turn.
     command_queue = []
 
+    direction_order = [Direction.North, Direction.South, Direction.East, Direction.West, Direction.Still]
+
     for ship in me.get_ships():
-        # For each of your ships, move randomly if the ship is on a low halite location or the ship is full.
-        #   Else, collect halite.
+        logging.info("Ship {} has {} halite.".format(ship.id, ship.halite_amount))
+        position_options = ship.position.get_surrounding_cardinals() + [ship.position]
+
+        # {(0,1): (19,38)}
+        position_dict = {}
+
+        # {(0,1):500}
+        halite_dict = {}
+
+        for n, direction in enumerate(direction_order):
+            position_dict[direction] = position_options[n]
+
+        for direction in position_dict:
+            position = position_dict[direction]
+            halite_amount = game_map[position].halite_amount
+            halite_dict[position] = halite_amount
+
+        if game.turn_number == 15:
+            logging.info(choices)
+
         if game_map[ship.position].halite_amount < constants.MAX_HALITE / 10 or ship.is_full:
-            command_queue.append(
-                ship.move(
-                    random.choice([ Direction.North, Direction.South, Direction.East, Direction.West ])))
+            command_queue.append(ship.move(max(halite_dict, key=halite_dict.get)))
         else:
             command_queue.append(ship.stay_still())
 
@@ -61,4 +71,3 @@ while True:
 
     # Send your moves back to the game environment, ending this turn.
     game.end_turn(command_queue)
-
