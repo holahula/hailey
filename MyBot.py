@@ -20,7 +20,6 @@ game_map = game.game_map
 
 shipyard_position = me.shipyard.position
 
-
 game.ready("holahula")
 
 # Now that your bot is initialized, save a message to yourself in the log file with some important information.
