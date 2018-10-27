@@ -236,7 +236,7 @@ class GameMap:
                 return direction
 
         return Direction.Still
-
+    
     @staticmethod
     def _generate():
         """
