@@ -53,13 +53,13 @@ while True:
 
     #go from least halite to most to avoid crashes
 
-    #ships.sort(key = lambda x: x.id)
+    ships.sort(key = lambda x: x.id)
 
-    logging.info("SHIP COUNT PRE : {}".format(len(ships)))
+    # logging.info("SHIP COUNT PRE : {}".format(len(ships)))
 
-    logging.info("check if all ships are present")
-    for ship in ships:
-        logging.info("ship {}".format(ship.id))
+    # logging.info("check if all ships are present")
+    # for ship in ships:
+    #     logging.info("ship {}".format(ship.id))
 
     if game.turn_number <= constants.MAX_TURNS *.75 and len(me.get_ships()) <= MAX_SHIPS:    #first period, prioritize making ships 
         if me.halite_amount >= constants.SHIP_COST and me.shipyard.position not in position_choices:# and len(me.get_ships()) < 10:
@@ -128,7 +128,7 @@ while True:
                     position_choices.append(position_dict[Direction.Still])
                     command_queue.append(ship.move(Direction.Still))
             else:
-                if game_map[ship.position].halite_amount > (ship.halite_amount / 5) and ship.halite_amount < 800 and ship.position not in position_choices:
+                if game_map[ship.position].halite_amount > (ship.halite_amount / 8) and ((ship.halite_amount+game_map[ship.position].halite_amount * 0.25) < 1000)  and ship.position not in position_choices:
                     move = Direction.Still
                     logging.info("Ship {} is moving {} from {} to {}".format(ship.id, Direction().convert(move), ship.position , position_dict[Direction.Still]))
                     position_choices.append(position_dict[move])
@@ -170,8 +170,6 @@ while True:
             ship_status[ship.id] = "depositing"
             
         no_legal_moves = True
-
-
 
     #end of ships for loop
     game.end_turn(command_queue)
