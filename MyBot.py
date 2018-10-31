@@ -25,14 +25,17 @@ if me.shipyard.position.y == game_map.height / 2:
 else:
     PLAYERS = 4
 
+counter = 0
 board_sizes = [32, 40, 48, 56, 64]
 for b in board_sizes:
     if game_map.width == b:
         BOARD_SIZE = b
         break
+    else:
+        counter = counter + 1
  
-MAX_SHIPS = 10 + (BOARD_SIZE / PLAYERS)
-
+# MAX_SHIPS = 10 + (BOARD_SIZE / PLAYERS)
+MAX_SHIPS = 20 + 3*counter
 # logging.info()
 
 #constants: PLAYERS | BOARD_SIZE | 
@@ -52,15 +55,7 @@ while True:
     position_choices = [] #co-ords that ships are moving to
     ships = me.get_ships()
 
-    #ships.sort(key = lambda x: x.id)
-
-    # logging.info("SHIP COUNT PRE : {}".format(len(ships)))
-
-    # logging.info("check if all ships are present")
-    # for ship in ships:
-    #     logging.info("ship {}".format(ship.id))
-
-    if game.turn_number <= constants.MAX_TURNS *.75 and len(me.get_ships()) < MAX_SHIPS:    #first period, prioritize making ships 
+    if game.turn_number <= constants.MAX_TURNS *.75 and len(me.get_ships()) < 30:    #first period, prioritize making ships 
         if me.halite_amount >= constants.SHIP_COST and me.shipyard.position not in position_choices:# and len(me.get_ships()) < 10:
             position_choices.append(me.shipyard.position)
             command_queue.append(me.shipyard.spawn())
@@ -70,10 +65,10 @@ while True:
             logging.info("Ship {} has spawned on turn {} at {}".format(ship.id, game.turn_number, me.shipyard.position))
             ship_status[ship.id] = "depositing"
 
-    #LOGIC FOR SHIPS THAT CANNOT MOVE
-    for ship in ships: 
+    #ships.sort(key = lambda x: x.halite_amount)    #LOGIC FOR SHIPS THAT CANNOT MOVE
+    for ship in me.get_ships(): 
         logging.info("ship {} has {} halite, and needs {} halite to move".format(ship.id, ship.halite_amount, game_map[ship.position].halite_amount * 0.1))
-        if ship.halite_amount < math.ceil(game_map[ship.position].halite_amount * 0.1):
+        if ship.halite_amount < game_map[ship.position].halite_amount * 0.1:
             logging.info("Ship {} cannot move and must stay at {}".format(ship.id, ship.position))
             position_choices.append(ship.position)
             command_queue.append(ship.stay_still())
@@ -88,7 +83,6 @@ while True:
     for ship in ships:
         # logging.info("processing logic for ship {}".format(ship.id))
         
-
         position_options = ship.position.get_surrounding_cardinals() + [ship.position]
         shipyard_options = me.shipyard.position.get_surrounding_cardinals()
 
@@ -124,10 +118,10 @@ while True:
                         break
                 if no_legal_moves:
                     logging.info("Ship {} is moving {} from {} to {}".format(ship.id,Direction().convert(dir), ship.position , position_dict[Direction.North]))
-                    position_choices.append(position_dict[Direction.South])
-                    command_queue.append(ship.move(Direction.South))
+                    position_choices.append(position_dict[Direction.Still])
+                    command_queue.append(ship.move(Direction.Still))
             else:
-                if game_map[ship.position].halite_amount > min(100, (ship.halite_amount / 8)) and ((ship.halite_amount+game_map[ship.position].halite_amount * 0.25) < 950)  and ship.position not in position_choices:
+                if game_map[ship.position].halite_amount >= ship.halite_amount / 8 and ship.halite_amount <= 850  and ship.position not in position_choices:
                     move = Direction.Still
                     logging.info("Ship {} is moving {} from {} to {}".format(ship.id, Direction().convert(move), ship.position , position_dict[Direction.Still]))
                     position_choices.append(position_dict[move])
@@ -169,7 +163,7 @@ while True:
                 position_choices.append(position_dict[move])
                 command_queue.append(ship.move(move))
 
-        if ship.halite_amount >= constants.MAX_HALITE / 2.5: #ship collects to 250 then returns
+        if ship.halite_amount >= constants.MAX_HALITE * 0.40:#max(0.40, 0.8 * (constants.MAX_TURNS - game.turn_number / constants.MAX_TURNS)): 
             ship_status[ship.id] = "depositing"
             
         no_legal_moves = True
