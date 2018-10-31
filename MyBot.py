@@ -54,11 +54,11 @@ while True:
 
     ships.sort(key = lambda x: x.id)
 
-    # logging.info("SHIP COUNT PRE : {}".format(len(ships)))
+    logging.info("SHIP COUNT PRE : {}".format(len(ships)))
 
-    # logging.info("check if all ships are present")
-    # for ship in ships:
-    #     logging.info("ship {}".format(ship.id))
+    logging.info("check if all ships are present")
+    for ship in ships:
+        logging.info("ship {}".format(ship.id))
 
     if game.turn_number <= constants.MAX_TURNS *.75 and len(me.get_ships()) < MAX_SHIPS:    #first period, prioritize making ships 
         if me.halite_amount >= constants.SHIP_COST and me.shipyard.position not in position_choices:# and len(me.get_ships()) < 10:
@@ -84,7 +84,7 @@ while True:
     ships.sort(key = lambda x: x.halite_amount, reverse = True)
 
     logging.info("SHIP COUNT POST SORT: {}".format(len(ships)))
-
+    #logging.info("move cost {}, extra ratio {}".format(constants.MOVE_COST_RATIO, constants.EXTRACT_RATIO))
     for ship in ships:
         logging.info("processing logic for ship {}".format(ship.id))
         
@@ -106,9 +106,9 @@ while True:
             halite_amount = game_map[position].halite_amount
             #if position not in position_choices: #not a tile another ship is moving into
             if direction == Direction.Still:   #affects logic for "collecting" - makes it more likely to stay still than to move 
-                halite_dict[direction] = halite_amount * 2
+                halite_dict[direction] = halite_amount * 2.5
             else:
-                halite_dict[direction] = halite_amount #- (0.1 * game_map[ship.position].halite_amount)
+                halite_dict[direction] = halite_amount - (game_map[ship.position].halite_amount / constants.MOVE_COST_RATIO)
 
         if ship_status[ship.id] == "depositing":
             if ship.position == me.shipyard.position:
@@ -160,12 +160,12 @@ while True:
                     no_legal_moves = False
                     break
             if no_legal_moves:
-                move = Direction.West
-                logging.info("Ship {} is moving {} from {} to {}".format(ship.id, Direction().convert(move), ship.position, position_dict[Direction.West]))
+                move = Direction.Still
+                logging.info("Ship {} has no legal moves and will move {} from {} to {}".format(ship.id, Direction().convert(move), ship.position, position_dict[Direction.West]))
                 position_choices.append(position_dict[move])
                 command_queue.append(ship.move(move))
 
-        if ship.halite_amount >= constants.MAX_HALITE / 2: #ship collects to 250 then returns
+        if ship.halite_amount >= constants.MAX_HALITE / 3: #ship collects to 250 then returns
             ship_status[ship.id] = "depositing"
             
         no_legal_moves = True
