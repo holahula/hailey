@@ -5,6 +5,7 @@ from hlt import constants
 from hlt.positionals import Direction
 
 import random
+import math
 #import numpy as np
 import logging
 
@@ -51,8 +52,6 @@ while True:
     position_choices = [] #co-ords that ships are moving to
     ships = me.get_ships()
 
-    #go from least halite to most to avoid crashes
-
     ships.sort(key = lambda x: x.id)
 
     # logging.info("SHIP COUNT PRE : {}".format(len(ships)))
@@ -61,7 +60,7 @@ while True:
     # for ship in ships:
     #     logging.info("ship {}".format(ship.id))
 
-    if game.turn_number <= constants.MAX_TURNS *.75 and len(me.get_ships()) <= MAX_SHIPS:    #first period, prioritize making ships 
+    if game.turn_number <= constants.MAX_TURNS *.75 and len(me.get_ships()) < MAX_SHIPS:    #first period, prioritize making ships 
         if me.halite_amount >= constants.SHIP_COST and me.shipyard.position not in position_choices:# and len(me.get_ships()) < 10:
             position_choices.append(me.shipyard.position)
             command_queue.append(me.shipyard.spawn())
@@ -74,7 +73,7 @@ while True:
     #LOGIC FOR SHIPS THAT CANNOT MOVE
     for ship in ships: 
         logging.info("ship {} has {} halite, and needs {} halite to move".format(ship.id, ship.halite_amount, game_map[ship.position].halite_amount * 0.1))
-        if ship.halite_amount < game_map[ship.position].halite_amount * 0.1:
+        if ship.halite_amount < math.ceil(game_map[ship.position].halite_amount * 0.1):
             logging.info("Ship {} cannot move and must stay at {}".format(ship.id, ship.position))
             position_choices.append(ship.position)
             command_queue.append(ship.stay_still())
