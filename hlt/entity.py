@@ -50,6 +50,15 @@ class Ship(Entity):
     """
     Ship class to house ship entities
     """
+    __ships = {}
+
+    def __new__(cls, owner, id, position, halite):
+        if id in Ship.__ships.keys():
+            self = Ship.__ships[id]
+        else:
+            self = super().__new__(cls)
+            Ship.__ships[id] = self
+        return self
     def __init__(self, owner, id, position, halite_amount):
         super().__init__(owner, id, position)
         self.halite_amount = halite_amount
